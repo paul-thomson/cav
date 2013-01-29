@@ -1,6 +1,7 @@
 CAV Assignment - MANMADILLO
 ===
 
+#Workplan
 1. Read skeleton.out and draw bones (to check if correct)
 2. Use matrix transformations to rotate bones (using keyframe)
 3. Read attachment.out which contains weights for each mesh vertex:
@@ -10,8 +11,8 @@ Each line represents a vertex (by index). Each line contains the weights for all
 4. Use the weights to "attach" them to the bones. Then also apply transformations to the mesh vertices
 5. Done?
 
-
-
+#Compile and run
+./run.sh
 
 
 
@@ -19,17 +20,17 @@ Each line represents a vertex (by index). Each line contains the weights for all
 
 
 ===================================================
-#compiling the demo program:
+compiling the demo program:
 
 g++ -o view view.cc matrix4f.cc -lglut -lGLU -lGL
 
-# running the program
+running the program
 
 ./view arma2.obj   
 
 
-# about  skeleton.out  and attachment.out 
-#
+about  skeleton.out  and attachment.out 
+
 Each line in skeleton.out corresponds to a joint and is of the form:
 idx x y z prev where prev is the index of the previous joint.
 
