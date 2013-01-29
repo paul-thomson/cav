@@ -539,7 +539,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
 
 	glutInitWindowSize(nRows, nCols);
-	glutCreateWindow("SimpleExample");
+	glutCreateWindow("CAV Assigment 1");
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
