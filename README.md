@@ -30,7 +30,7 @@ running the program
 
 
 about  skeleton.out  and attachment.out 
-
+	
 Each line in skeleton.out corresponds to a joint and is of the form:
 idx x y z prev where prev is the index of the previous joint.
 

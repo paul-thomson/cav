@@ -18,33 +18,33 @@ int newModel = 1;
 void
 mouse(int button, int state, int x, int y)
 {
-  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-    moving = 1;
-    begin = x;
-  }
-  if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-    moving = 0;
-  }
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		moving = 1;
+		begin = x;
+	}
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+		moving = 0;
+	}
 }
 
 /* ARGSUSED1 */
 void motion(int x, int y)
 {
-  if (moving) {
-    angle = angle + (x - begin);
-    begin = x;
-    newModel = 1;
-    glutPostRedisplay();
-  }
+	if (moving) {
+		angle = angle + (x - begin);
+		begin = x;
+		newModel = 1;
+		glutPostRedisplay();
+	}
 }
 
 void
 tablet(int x, int y)
 {
-  xloc = ((GLfloat) x) / 500 - 4;
-  yloc = ((GLfloat) y) / 1000 - 2;
-  newModel = 1;
-  glutPostRedisplay();
+	xloc = ((GLfloat) x) / 500 - 4;
+	yloc = ((GLfloat) y) / 1000 - 2;
+	newModel = 1;
+	glutPostRedisplay();
 }
 
 int xt = 1, yt = 1, zt = 1, xr = 1;
@@ -52,63 +52,63 @@ int xt = 1, yt = 1, zt = 1, xr = 1;
 void
 translate(int x, int y, int z)
 {
-  GLfloat newz;
+	GLfloat newz;
 
-  if (xt)
-    xloc += ((GLfloat) x) / 100;
-  if (yt)
-    yloc += ((GLfloat) y) / 100;
-  if (zt) {
-    newz = zloc - ((GLfloat) z) / 100;
-    if (newz > -60.0 && newz < 13.0)
-      zloc = newz;
-  }
-  newModel = 1;
-  glutPostRedisplay();
+	if (xt)
+		xloc += ((GLfloat) x) / 100;
+	if (yt)
+		yloc += ((GLfloat) y) / 100;
+	if (zt) {
+		newz = zloc - ((GLfloat) z) / 100;
+		if (newz > -60.0 && newz < 13.0)
+			zloc = newz;
+	}
+	newModel = 1;
+	glutPostRedisplay();
 }
 
 /* ARGSUSED1 */
 void
 rotate(int x, int y, int z)
 {
-  if (xr) {
-    angle += x / 2.0;
-    newModel = 1;
-    glutPostRedisplay();
-  }
+	if (xr) {
+		angle += x / 2.0;
+		newModel = 1;
+		glutPostRedisplay();
+	}
 }
 
 void
 button(int button, int state)
 {
-  if (state == GLUT_DOWN) {
-    switch (button) {
-    case 1:
-      xt = yt = zt = xr = 1;
-      break;
-    case 5:
-      xt = 1;
-      yt = zt = xr = 0;
-      break;
-    case 6:
-      yt = 1;
-      xt = zt = xr = 0;
-      break;
-    case 7:
-      zt = 1;
-      xt = yt = xr = 0;
-      break;
-    case 8:
-      xr = 1;
-      xt = yt = zt = 0;
-      break;
-    case 9:
-      xloc = yloc = zloc = 0;
-      newModel = 1;
-      glutPostRedisplay();
-      break;
-    }
-  }
+	if (state == GLUT_DOWN) {
+		switch (button) {
+		case 1:
+			xt = yt = zt = xr = 1;
+			break;
+		case 5:
+			xt = 1;
+			yt = zt = xr = 0;
+			break;
+		case 6:
+			yt = 1;
+			xt = zt = xr = 0;
+			break;
+		case 7:
+			zt = 1;
+			xt = yt = xr = 0;
+			break;
+		case 8:
+			xr = 1;
+			xt = yt = zt = 0;
+			break;
+		case 9:
+			xloc = yloc = zloc = 0;
+			newModel = 1;
+			glutPostRedisplay();
+			break;
+		}
+	}
 }
 
 
@@ -137,6 +137,7 @@ static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
 
 
 TriangleMesh trig;
+vector< vector <float> > bones;
 GLUquadricObj *qobj;
 
 
@@ -153,7 +154,7 @@ bool contain(Edge & e, map < pair <int, int> , Edge > & list)
 	if (list.find(key) == list.end()) return false;
 	else return true;
 }
-*/
+ */
 
 bool contain(Edge & e, vector < Edge > & list) 
 {
@@ -162,7 +163,7 @@ bool contain(Edge & e, vector < Edge > & list)
 	for (int i = 0; i < list.size(); i++) 
 	{
 		if ((list[i]._v1 == e._v1 && list[i]._v2 == e._v2) ||
-		    (list[i]._v2 == e._v1 && list[i]._v1 == e._v2)) 
+				(list[i]._v2 == e._v1 && list[i]._v1 == e._v2))
 		{
 			return true;
 		}	
@@ -178,7 +179,7 @@ int edgeID(Edge & e, vector < Edge > & list)
 	for (int i = 0; i < list.size(); i++) 
 	{
 		if ((list[i]._v1 == e._v1 && list[i]._v2 == e._v2) ||
-		    (list[i]._v2 == e._v1 && list[i]._v1 == e._v2)) 
+				(list[i]._v2 == e._v1 && list[i]._v1 == e._v2))
 		{
 			return i;
 		}	
@@ -201,7 +202,7 @@ int edgeID(Edge & e, map < pair <int, int> , Edge > & list)
 	if (list.find(key) == list.end()) return -1;
 	else return list[key].id();   
 }
-*/
+ */
 
 
 
@@ -235,10 +236,10 @@ void TriangleMesh::loadFile(char * filename)
 	xmin =10000; ymin =10000; zmin =10000;
 
 	while (!f.eof()) {
-		    f.getline(buf, sizeof(buf));
-		    sscanf(buf, "%s", header);  
+		f.getline(buf, sizeof(buf));
+		sscanf(buf, "%s", header);
 
-		    if (strcmp(header, "v") == 0) {
+		if (strcmp(header, "v") == 0) {
 			sscanf(buf, "%s %f %f %f", header, &x, &y, &z);  
 			_v.push_back(Vector3f(x,y,z));
 
@@ -249,7 +250,7 @@ void TriangleMesh::loadFile(char * filename)
 			node._id = _v.size()-1; 
 
 			_node.push_back(node);
-			
+
 
 			if (x > xmax) xmax = x;
 			if (y > ymax) ymax = y;
@@ -258,16 +259,16 @@ void TriangleMesh::loadFile(char * filename)
 			if (x < xmin) xmin = x;
 			if (y < ymin) ymin = y;
 			if (z < zmin) zmin = z;
-		    }
-		    else if (strcmp(header, "vn") == 0) {
-		//	sscanf(buf, "%s %f %f %f", header, &x, &y, &z);  
-		//	_vn.push_back(Vector3f(x,y,z));
-		    }
-		    else if (strcmp(header, "f") == 0) 
-		    {
-		//	sscanf(buf, "%s %d//%d %d//%d %d//%d", header, &v1, &n1,
-		//		&v2, &n2, &v3, &n3);
-			
+		}
+		else if (strcmp(header, "vn") == 0) {
+			//	sscanf(buf, "%s %f %f %f", header, &x, &y, &z);
+			//	_vn.push_back(Vector3f(x,y,z));
+		}
+		else if (strcmp(header, "f") == 0)
+		{
+			//	sscanf(buf, "%s %d//%d %d//%d %d//%d", header, &v1, &n1,
+			//		&v2, &n2, &v3, &n3);
+
 
 			sscanf(buf, "%s %d %d %d", header, &v1, &v2, &v3);
 
@@ -284,19 +285,19 @@ void TriangleMesh::loadFile(char * filename)
 			pair <int, int> id10(v1-1,v2-1),id11(v2-1,v1-1),
 			     		id20(v2-1,v3-1),id21(v3-1,v2-1),
 					id30(v3-1,v1-1),id31(v1-1,v3-1); 
-			*/
+			 */
 
 			int id1,id2,id3;
 
 			if ((id1 = edgeID(e1, _edge)) < 0) 
 			{
-//				_edge[id10] = e1; _edge[id11] = e1;
+				//				_edge[id10] = e1; _edge[id11] = e1;
 
-//				_edge[id10].setId(_edge.size()/2);
-//				_edge[id11].setId(_edge.size()/2);
+				//				_edge[id10].setId(_edge.size()/2);
+				//				_edge[id11].setId(_edge.size()/2);
 
-//				_edge[id10].add_triangle(&trig);
-//				_edge[id11].add_triangle(&trig);
+				//				_edge[id10].add_triangle(&trig);
+				//				_edge[id11].add_triangle(&trig);
 
 				id1 = _edge.size();
 				_edge.push_back(e1);
@@ -314,13 +315,13 @@ void TriangleMesh::loadFile(char * filename)
 			{
 				/*
 				_edge[id20] = e2; _edge[id21] = e2;
-				
+
 				_edge[id20].setId(_edge.size()/2);
 				_edge[id21].setId(_edge.size()/2);
 
 				_edge[id20].add_triangle(&trig);
 				_edge[id21].add_triangle(&trig);
-				*/
+				 */
 
 				id2 = _edge.size();
 				e2.setId(id2);
@@ -346,7 +347,7 @@ void TriangleMesh::loadFile(char * filename)
 
 				_edge[id30].add_triangle(&trig);
 				_edge[id31].add_triangle(&trig);
-				*/
+				 */
 
 				id3 = _edge.size();
 				e3.setId(id3);
@@ -366,9 +367,9 @@ void TriangleMesh::loadFile(char * filename)
 			_edge[id3].add_triangle(trig._id);
 
 
-//			_trig[_trig.size()-1].setEdge(_edge[id10].id(), _edge[id20].id(), _edge[id30].id());
+			//			_trig[_trig.size()-1].setEdge(_edge[id10].id(), _edge[id20].id(), _edge[id30].id());
 			_trig[_trig.size()-1].setEdge(id1,id2,id3); 
-//			_trig[_trig.size()-1].setEdge(&_edge[id1], &_edge[id2], &_edge[id3]);
+			//			_trig[_trig.size()-1].setEdge(&_edge[id1], &_edge[id2], &_edge[id3]);
 
 			//cout << " set Edge "<< "ids " << id1 << ' '<< id2 << ' '<<id3<<'-' << _edge[id1].id() << ' ' <<  _edge[id2].id() << ' ' <<  _edge[id3].id() << endl;
 			/*
@@ -376,16 +377,16 @@ void TriangleMesh::loadFile(char * filename)
 			cout << " trig " << _trig.size()-1 << ' '; 
 			cout << _trig[tmpid].edge(0) << ' ' << _trig[tmpid].edge(1) << ' ' 
 			     << _trig[tmpid].edge(2) << endl; 
-			*/
+			 */
 
-		    }
- 	}
+		}
+	}
 
 	vector < vector < int > > facelist (_v.size());
 	vector < Vector3f > facenorm (_trig.size());
 
 	for (int i = 0; i < _edge.size(); i++) {
-		cout << " edge " << i << " trig list " << _edge[i].getTrigList().size()<< endl;
+		//	cout << " edge " << i << " trig list " << _edge[i].getTrigList().size()<< endl;
 	}
 
 	for (int i = 0; i < _trig.size(); i++) 
@@ -394,7 +395,7 @@ void TriangleMesh::loadFile(char * filename)
 		cout << " trig " << i << ' '; 
 			cout << _trig[i].edge(0) << ' ' << _trig[i].edge(1) << ' ' 
 			     << _trig[i].edge(2) << endl; 
-		*/
+		 */
 
 
 		Vector3f tmpv = (_v[_trig[i]._vertex[2]] - _v[_trig[i]._vertex[0]]) % 
@@ -417,25 +418,25 @@ void TriangleMesh::loadFile(char * filename)
 
 		if (_v[i][1] > 0.5) 
 		{
-		       rate1 = 1.f ; rate2 = 0.f;	
+			rate1 = 1.f ; rate2 = 0.f;
 		}
 		else if (_v[i][1] < -0.5) 
 		{
-		       rate1 = 0.f ; rate2 = 1.f;	
+			rate1 = 0.f ; rate2 = 1.f;
 		}
 		else 
 		{
 			rate1 = _v[i][1] + 0.5f; rate2 = 1.f - rate1; 
 		}
 
-	//	cout << " v " << i << " 1:" << rate1 << " 2:" << rate2 << endl ;
+		//	cout << " v " << i << " 1:" << rate1 << " 2:" << rate2 << endl ;
 
 		for (int j = 0; j < facelist[i].size(); j++) 
 		{
 			N += facenorm[facelist[i][j]]; 
-	//		cout << " f " << facelist[i][j] << ' ' ;
+			//		cout << " f " << facelist[i][j] << ' ' ;
 		}
-	//	cout << endl;
+		//	cout << endl;
 
 		N /= (float)facelist[i].size();
 
@@ -449,6 +450,41 @@ void TriangleMesh::loadFile(char * filename)
 	f.close();
 
 };
+
+void loadBones(char * filename) {
+
+
+	ifstream bonesfile;
+	string line;
+	bonesfile.open("skeleton2.out");
+
+	if (bonesfile == NULL) {
+		cerr << "Failed reading bones file " << filename << endl;
+		exit(1);
+	}
+
+	while(!bonesfile.eof()) {
+		getline(bonesfile,line); // line is now the next line in file
+
+		int i;
+		vector<float> bone;
+		float p1;
+		float p2;
+		float p3;
+		int prev;
+		char *fileName = (char*)line.c_str(); //sscanf takes char array
+		sscanf(fileName,"%i %f %f %f %i",&i, &p1, &p2, &p3, &prev);
+		//printf ("%i %f %f %f %i \n",i, p1, p2, p3, prev);
+		bone.push_back(p1);
+		bone.push_back(p2);
+		bone.push_back(p3);
+		bone.push_back(prev);
+		bones.push_back(bone);
+
+	}
+	bonesfile.close();
+	//assert(bones.size() == 21);
+}
 
 
 
@@ -465,7 +501,6 @@ void recalcModelView(void)
 
 void myDisplay()
 {
-
 
 	if (newModel)
 		recalcModelView();
@@ -491,35 +526,45 @@ void myDisplay()
 		if (max >= 0) {
 			glBegin(GL_TRIANGLES);
 
-				skinColor[1] = m1; skinColor[0] = 1-m1;
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
-				glNormal3f(-n1[0],-n1[1],-n1[2]);
-				glVertex3f(v1[0],v1[1],v1[2]);
+			skinColor[1] = m1; skinColor[0] = 1-m1;
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
+			glNormal3f(-n1[0],-n1[1],-n1[2]);
+			glVertex3f(v1[0],v1[1],v1[2]);
 
-				skinColor[1] = m2; skinColor[0] = 1-m2;
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
-				glNormal3f(-n2[0],-n2[1],-n2[2]);
-				glVertex3f(v2[0],v2[1],v2[2]);
+			skinColor[1] = m2; skinColor[0] = 1-m2;
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
+			glNormal3f(-n2[0],-n2[1],-n2[2]);
+			glVertex3f(v2[0],v2[1],v2[2]);
 
-				skinColor[1] = m3; skinColor[0] = 1-m3;
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
-				glNormal3f(-n3[0],-n3[1],-n3[2]);
-				glVertex3f(v3[0],v3[1],v3[2]);
+			skinColor[1] = m3; skinColor[0] = 1-m3;
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
+			glNormal3f(-n3[0],-n3[1],-n3[2]);
+			glVertex3f(v3[0],v3[1],v3[2]);
 
-				skinColor[1] = m1; skinColor[0] = 1-m1;
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
-				glNormal3f(-n1[0],-n1[1],-n1[2]);
-				glVertex3f(v1[0],v1[1],v1[2]);
+			skinColor[1] = m1; skinColor[0] = 1-m1;
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
+			glNormal3f(-n1[0],-n1[1],-n1[2]);
+			glVertex3f(v1[0],v1[1],v1[2]);
 
+			glEnd();
+		}
+
+
+	}
+	for (int i = 0; i < bones.size(); i++) {
+		float joinBone = bones[i][3];
+		if (joinBone >= 0) {
+			glLineWidth(10);
+			glColor3f(1.0, 1.0, 1.0);
+			glBegin(GL_LINES);
+			glVertex3f(bones[i][0],bones[i][1],bones[i][2]+0.4);
+			glVertex3f(bones[joinBone][0],bones[joinBone][1],bones[joinBone][2]+0.4);
 			glEnd();
 		}
 	}
 
-	 glutSwapBuffers();
+	glutSwapBuffers();
 }
-
-
-
 
 
 
@@ -528,6 +573,7 @@ int main(int argc, char **argv)
 {
 	if (argc >  1)  {
 		trig.loadFile(argv[1]);
+		loadBones("skeleton2.out");
 	}
 	else {
 		cerr << argv[0] << " <filename> " << endl;
@@ -539,7 +585,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
 
 	glutInitWindowSize(nRows, nCols);
-	glutCreateWindow("CAV Assigment 1");
+	glutCreateWindow("CAV Assignment 1");
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -555,13 +601,13 @@ int main(int argc, char **argv)
 	/* Setup the view of the cube. */
 	glMatrixMode(GL_PROJECTION);
 	gluPerspective( /* field of view in degree */ 40.0, 
-	/* aspect ratio */ 1., /* Z near */ 1.0, /* Z far */ 1000.0);
+			/* aspect ratio */ 1., /* Z near */ 1.0, /* Z far */ 1000.0);
 
 	glMatrixMode(GL_MODELVIEW);
 
 	gluLookAt(0.0, 0.0, 7.0,  /* eye is at (0,0,5) */
-		  0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-		  0.0, 1.0, 0.0);      /* up is in positive Y direction */
+			0.0, 0.0, 0.0,      /* center is at (0,0,0) */
+			0.0, 1.0, 0.0);      /* up is in positive Y direction */
 	glPushMatrix();       /* dummy push so we can pop on model recalc */
 
 
