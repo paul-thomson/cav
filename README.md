@@ -2,7 +2,7 @@ CAV Assignment - MANMADILLO
 ===
 
 #Workplan
-1. Read skeleton.out and draw bones (to check if correct)
+1. (DONE) Read skeleton.out and draw bones (to check if correct)
 2. Use matrix transformations to rotate bones (using keyframe)
 3. Read attachment.out which contains weights for each mesh vertex:
 
