@@ -10,7 +10,7 @@
 /* sscanf example */
 #include <stdio.h>
 
-int main ()
+int main2 ()
 {
   char sentence []="0 -0.0881862 -0.223678 -0.929536 -1";
   int i;

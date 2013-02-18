@@ -6,6 +6,8 @@
 #include "view.h"
 
 
+
+
 GLdouble bodyWidth = 1.0;
 
 GLfloat angle = -150;   /* in degrees */
