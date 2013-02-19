@@ -140,6 +140,7 @@ static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
 
 TriangleMesh trig;
 vector< vector <float> > bones;
+vector< Matrix4f > boneRotations;
 GLUquadricObj *qobj;
 
 
@@ -466,6 +467,7 @@ void loadBones(char * filename) {
 	}
 
 	while(!bonesfile.eof()) {
+
 		getline(bonesfile,line); // line is now the next line in file
 
 		int i;
@@ -482,8 +484,11 @@ void loadBones(char * filename) {
 		bone.push_back(p3);
 		bone.push_back(prev);
 		bones.push_back(bone);
-
+		Matrix4f id = Matrix4f();
+		id.setIdentity();
+		boneRotations.push_back(id);
 	}
+	boneRotations[1] = rotY(1.5);
 	bonesfile.close();
 	//assert(bones.size() == 21);
 }
@@ -551,16 +556,35 @@ void myDisplay()
 			glEnd();
 		}
 
-
 	}
 	for (int i = 0; i < bones.size(); i++) {
-		float joinBone = bones[i][3];
-		if (joinBone >= 0) {
+		int joinBoneIndex = bones[i][3];
+		int currentBoneIndex = i;
+		Matrix4f m = Matrix4f();
+		m.setIdentity();
+		Matrix4f mhatinv = Matrix4f();
+		mhatinv.setIdentity();
+		if (joinBoneIndex >= 0) {
+			while (joinBoneIndex != -1) {
+				Vector3f currentBoneVector = Vector3f(bones[i][0],bones[i][1],bones[i][2]);
+				Vector3f currentJoinBone = Vector3f(bones[joinBoneIndex][0],bones[joinBoneIndex][1],bones[joinBoneIndex][2]);
+				Matrix4f t = translation(currentBoneVector-currentJoinBone);
+				m = m * boneRotations[currentBoneIndex] * t;
+				mhatinv = mhatinv * !boneRotations[currentBoneIndex] * !t;
+				currentBoneIndex = joinBoneIndex;
+				joinBoneIndex = bones[joinBoneIndex][3];
+			}
+			// reset join bone information since previous while loop may have messed it up
+			joinBoneIndex = bones[i][3];
+			Vector3f joinBone = Vector3f(bones[joinBoneIndex][0],bones[joinBoneIndex][1],bones[joinBoneIndex][2]);
+			Vector3f boneVector = Vector3f(bones[i][0],bones[i][1],bones[i][2]);
+			Vector3f v = m * (mhatinv * boneVector);
 			glLineWidth(10);
 			glColor3f(1.0, 1.0, 1.0);
 			glBegin(GL_LINES);
-			glVertex3f(bones[i][0],bones[i][1],bones[i][2]+0.4);
-			glVertex3f(bones[joinBone][0],bones[joinBone][1],bones[joinBone][2]+0.4);
+			glVertex3f(v[0],v[1],v[2]+0.4);
+			//glVertex3f(bones[i][0],bones[i][1],bones[i][2]+0.4);
+			glVertex3f(joinBone[0],joinBone[1],joinBone[2]+0.4);
 			glEnd();
 		}
 	}
@@ -568,11 +592,40 @@ void myDisplay()
 	glutSwapBuffers();
 }
 
+void printMatrix4f(Matrix4f m) {
+	for (int i = 0; i < 4; i++) {
+		cout << m(i,0) << ", " << m(i,1) << ", " << m(i,2) <<  ", " << m(i,3) << "\n";
+	}
+}
+
+void printVector3f(Vector3f v) {
+	cout << v[0] << ", " << v[1] << ", " << v[2] << "\n";
+}
+
 
 
 
 int main(int argc, char **argv)
 {
+	/* Matrix4f id = Matrix4f();
+	id.setIdentity();
+	Vector3f boneVector2 = Vector3f(-1,0,1);
+	Vector3f boneVector = Vector3f(0,0,1);
+	Vector3f joinBone = Vector3f(1,1,1);
+	Matrix4f t1 = translation(boneVector-joinBone);
+	Matrix4f m1 = rotZ(1.5) * t1;
+	Matrix4f mhatinv1 =  !rotZ(1.5) * !t1;
+	Matrix4f t2 = translation(boneVector2-boneVector);
+	Matrix4f m2 = id * t2;
+	Matrix4f mhatinv2 =  !id * !t2;
+	Matrix4f m = m1 * m2;
+	Matrix4f mhatinv = mhatinv1 * mhatinv2;
+
+	Vector3f v = m * mhatinv * boneVector2;
+	printVector3f(v);
+
+	return 0; */
+
 	if (argc >  1)  {
 		trig.loadFile(argv[1]);
 		loadBones("skeleton2.out");
