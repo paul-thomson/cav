@@ -16,6 +16,17 @@ int moving, begin;
 int newModel = 1;
 
 
+void printMatrix4f(Matrix4f m) {
+	for (int i = 0; i < 4; i++) {
+		cout << m(i,0) << ", " << m(i,1) << ", " << m(i,2) <<  ", " << m(i,3) << "\n";
+	}
+}
+
+void printVector3f(Vector3f v) {
+	cout << v[0] << ", " << v[1] << ", " << v[2] << "\n";
+}
+
+
 /* ARGSUSED3 */
 void
 mouse(int button, int state, int x, int y)
@@ -141,6 +152,7 @@ static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
 TriangleMesh trig;
 vector< vector <float> > bones;
 vector< Matrix4f > boneRotations;
+vector< vector <float> > vertexWeights;
 GLUquadricObj *qobj;
 
 
@@ -456,10 +468,9 @@ void TriangleMesh::loadFile(char * filename)
 
 void loadBones(char * filename) {
 
-
 	ifstream bonesfile;
 	string line;
-	bonesfile.open("skeleton2.out");
+	bonesfile.open(filename);
 
 	if (bonesfile == NULL) {
 		cerr << "Failed reading bones file " << filename << endl;
@@ -476,8 +487,8 @@ void loadBones(char * filename) {
 		float p2;
 		float p3;
 		int prev;
-		char *fileName = (char*)line.c_str(); //sscanf takes char array
-		sscanf(fileName,"%i %f %f %f %i",&i, &p1, &p2, &p3, &prev);
+		char *fileLine = (char*)line.c_str(); //sscanf takes char array
+		sscanf(fileLine,"%i %f %f %f %i",&i, &p1, &p2, &p3, &prev);
 		//printf ("%i %f %f %f %i \n",i, p1, p2, p3, prev);
 		bone.push_back(p1);
 		bone.push_back(p2);
@@ -488,13 +499,33 @@ void loadBones(char * filename) {
 		id.setIdentity();
 		boneRotations.push_back(id);
 	}
-	boneRotations[1] = rotY(1.5);
+	//boneRotations[2] = rotX(1.5);
 	bonesfile.close();
-	//assert(bones.size() == 21);
 }
 
+void loadWeights(char * filename) {
+	ifstream weightsfile;
+	weightsfile.open(filename);
 
+	if (weightsfile == NULL) {
+		cerr << "Failed reading weights file " << filename << endl;
+		exit(1);
+	}
 
+	string line;
+
+	while(!weightsfile.eof()) {
+
+		vector <float> weights;
+		for (int i = 0; i < 21; i++) {
+			float w;
+			weightsfile >> w;
+			weights.push_back(w);
+		}
+		vertexWeights.push_back(weights);
+	}
+	weightsfile.close();
+}
 
 void recalcModelView(void)
 {
@@ -513,16 +544,83 @@ void myDisplay()
 		recalcModelView();
 
 
+
+	vector <Matrix4f> frameM;
+	vector <Matrix4f> frameMhatinv;
+	for (int i = 0; i < bones.size(); i++) {
+		int currentBoneIndex = i;
+		int joinBoneIndex = bones[i][3];
+		Matrix4f m;
+		m.setIdentity();
+		Matrix4f mhatinv;
+		mhatinv.setIdentity();
+		while (joinBoneIndex != -1) {
+			Vector3f currentBoneVector = Vector3f(bones[i][0],bones[i][1],bones[i][2]);
+			Vector3f currentJoinBone = Vector3f(bones[joinBoneIndex][0],bones[joinBoneIndex][1],bones[joinBoneIndex][2]);
+			Matrix4f t = translation(currentBoneVector-currentJoinBone);
+			m = m * boneRotations[currentBoneIndex] * t;
+			mhatinv = mhatinv * !boneRotations[currentBoneIndex] * !t;
+			currentBoneIndex = joinBoneIndex;
+			joinBoneIndex = bones[joinBoneIndex][3];
+		}
+		frameM.push_back(m);
+		frameMhatinv.push_back(mhatinv);
+	}
+	//cout << frameMhatinv[2](3,3) << "\n";
+	Vector3f bone = Vector3f(bones[2][0],bones[2][1],bones[2][2]);
+	Vector3f ex = frameM[2] * frameMhatinv[2] * bone;
+	printVector3f(ex);
+	printVector3f(bone);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear OpenGL Window
 	int trignum = trig.trigNum();
-	Vector3f v1,v2,v3,n1,n2,n3;
-
+	Vector3f v1,v2,v3,n1,n2,n3,cv1,cv2,cv3;
+	int v1Num, v2Num, v3Num;
 
 	for (int i = 0 ; i < trignum; i++)  
 	{
+		trig.getVertexIndices(i, v1Num, v2Num, v3Num);
+		trig.getTriangleVertices(i,cv1,cv2,cv3); //copies which do not change
+		float w;
+		Vector3f v1 = Vector3f(0,0,0);
+		Vector3f v2 = Vector3f(0,0,0);
+		Vector3f v3 = Vector3f(0,0,0);
+		for (int b = 0; b < bones.size(); b++) {
 
+			w = vertexWeights[v1Num][b];
+			//cout << "START\n";
+			//printMatrix4f(frameM[b]);
+			//printMatrix4f(frameMhatinv[b]);
+			//printVector3f(cv1);
+			//cout << w << "\n";
+			//cout << "BEFORE\n";
+			//printVector3f(v1);
+			v1 = v1 + (frameM[b] * (frameMhatinv[b] * cv1)) * w;
+			//cout << "AFTER\n";
+			//printVector3f(v1);
+			//printVector3f((frameM[b] * (frameMhatinv[b] * cv1)) * w);
+			//cout << "END\n";
+
+			w = vertexWeights[v2Num][b];
+			v2 = v2 + (frameM[b] * frameMhatinv[b] * cv2) * w;
+
+			w = vertexWeights[v3Num][b];
+			v3 = v3 + (frameM[b] * (frameMhatinv[b] * cv3)) * w;
+
+		}
+		//cout << "V: " << v2[0] << "," << v2[1] << "," << v2[2] << "\n";
+		//cout << "CV: " << cv2[0] << "," << cv2[1] << "," << cv2[1] << "\n";
+		//Vector3f ar = Vector3f(1,2,3);
+		vector<int> ar;
+		ar.push_back(1);
+		ar.push_back(2);
+		ar.push_back(3);
+		ar.push_back(4);
+		//usleep(1000);
+		printVector3f(v2);
+		//cout << "ASD" << ar[0] << "ASDASD" << ar[1] << "SD" << ar[2] << "ASD\n";
+		//cout << "ASDASD" << "ASDASD" << "ASDASD " << "ASD" << "QWE" << "ASD" << "QWWE" << "ASDSD"  << "SOD\n";
 		float m1,m2,m3,min,max;
-		trig.getTriangleVertices(i,v1,v2,v3);
 		trig.getTriangleNormals(i,n1,n2,n3);
 		trig.getMorseValue(i, m1, m2, m3);
 
@@ -592,15 +690,6 @@ void myDisplay()
 	glutSwapBuffers();
 }
 
-void printMatrix4f(Matrix4f m) {
-	for (int i = 0; i < 4; i++) {
-		cout << m(i,0) << ", " << m(i,1) << ", " << m(i,2) <<  ", " << m(i,3) << "\n";
-	}
-}
-
-void printVector3f(Vector3f v) {
-	cout << v[0] << ", " << v[1] << ", " << v[2] << "\n";
-}
 
 
 
@@ -629,6 +718,7 @@ int main(int argc, char **argv)
 	if (argc >  1)  {
 		trig.loadFile(argv[1]);
 		loadBones("skeleton2.out");
+		loadWeights("attachment2.out");
 	}
 	else {
 		cerr << argv[0] << " <filename> " << endl;

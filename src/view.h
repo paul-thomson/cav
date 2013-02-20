@@ -183,6 +183,14 @@ public:
 
 	int trigNum() { return _trig.size() ;};
 
+	int vertexNum() { return _v.size() ;};
+
+	void getVertexIndices(int i, int  & v1, int & v2, int & v3) {
+		v1 = _trig[i]._vertex[0];
+		v2 = _trig[i]._vertex[1];
+		v3 = _trig[i]._vertex[2];
+	}
+
 	void getTriangleVertices(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
 	{
 		v1 = _v[_trig[i]._vertex[0]]; 

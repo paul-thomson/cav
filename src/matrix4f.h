@@ -25,6 +25,7 @@ class Vector3f {
 	Vector3f() { _item[0]=_item[1]=_item[2]=0.f;};
 
 
+
 	Vector3f & operator = (const Vector3f & obj) 
 	{
 		_item[0] = obj[0];
@@ -92,6 +93,17 @@ class Vector3f {
 
 		return ret;
 	}
+
+
+	Vector3f & operator * (const float f)
+	{
+		Vector3f v;
+		v[0] = _item[0] * f;
+		v[1] = _item[1] * f;
+		v[2] = _item[2] * f;
+
+		return v;
+	};
 
 
 
