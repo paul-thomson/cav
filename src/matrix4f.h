@@ -95,7 +95,7 @@ class Vector3f {
 	}
 
 
-	Vector3f & operator * (const float f)
+	/*Vector3f & operator * (const float f)
 	{
 		Vector3f v;
 		v[0] = _item[0] * f;
@@ -103,7 +103,7 @@ class Vector3f {
 		v[2] = _item[2] * f;
 
 		return v;
-	};
+	};*/
 
 
 
@@ -111,6 +111,7 @@ class Vector3f {
 	friend Vector3f operator % ( const Vector3f &ob1, const Vector3f &ob2);
 	friend Vector3f operator - ( const Vector3f &ob1, const Vector3f &ob2);
 	friend Vector3f operator + ( const Vector3f &ob1, const Vector3f &ob2);
+	friend Vector3f operator * ( const Vector3f &ob1, const float f);
 
 };
 

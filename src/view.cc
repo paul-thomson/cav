@@ -497,9 +497,11 @@ void loadBones(char * filename) {
 		bones.push_back(bone);
 		Matrix4f id = Matrix4f();
 		id.setIdentity();
-		boneRotations.push_back(id);
+		if (!bonesfile.eof()) {
+			boneRotations.push_back(id);
+		}
 	}
-	//boneRotations[2] = rotX(1.5);
+	boneRotations[17] = rotX(0.5);
 	bonesfile.close();
 }
 
@@ -566,17 +568,12 @@ void myDisplay()
 		frameM.push_back(m);
 		frameMhatinv.push_back(mhatinv);
 	}
-	//cout << frameMhatinv[2](3,3) << "\n";
-	Vector3f bone = Vector3f(bones[2][0],bones[2][1],bones[2][2]);
-	Vector3f ex = frameM[2] * frameMhatinv[2] * bone;
-	printVector3f(ex);
-	printVector3f(bone);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear OpenGL Window
 	int trignum = trig.trigNum();
 	Vector3f v1,v2,v3,n1,n2,n3,cv1,cv2,cv3;
 	int v1Num, v2Num, v3Num;
-
+	float minZ = 0;
 	for (int i = 0 ; i < trignum; i++)  
 	{
 		trig.getVertexIndices(i, v1Num, v2Num, v3Num);
@@ -588,38 +585,14 @@ void myDisplay()
 		for (int b = 0; b < bones.size(); b++) {
 
 			w = vertexWeights[v1Num][b];
-			//cout << "START\n";
-			//printMatrix4f(frameM[b]);
-			//printMatrix4f(frameMhatinv[b]);
-			//printVector3f(cv1);
-			//cout << w << "\n";
-			//cout << "BEFORE\n";
-			//printVector3f(v1);
-			v1 = v1 + (frameM[b] * (frameMhatinv[b] * cv1)) * w;
-			//cout << "AFTER\n";
-			//printVector3f(v1);
-			//printVector3f((frameM[b] * (frameMhatinv[b] * cv1)) * w);
-			//cout << "END\n";
-
+			v1 = v1 + (frameM[b] * frameMhatinv[b] * cv1) * w;
 			w = vertexWeights[v2Num][b];
 			v2 = v2 + (frameM[b] * frameMhatinv[b] * cv2) * w;
 
 			w = vertexWeights[v3Num][b];
-			v3 = v3 + (frameM[b] * (frameMhatinv[b] * cv3)) * w;
+			v3 = v3 + (frameM[b] * frameMhatinv[b] * cv3) * w;
 
 		}
-		//cout << "V: " << v2[0] << "," << v2[1] << "," << v2[2] << "\n";
-		//cout << "CV: " << cv2[0] << "," << cv2[1] << "," << cv2[1] << "\n";
-		//Vector3f ar = Vector3f(1,2,3);
-		vector<int> ar;
-		ar.push_back(1);
-		ar.push_back(2);
-		ar.push_back(3);
-		ar.push_back(4);
-		//usleep(1000);
-		printVector3f(v2);
-		//cout << "ASD" << ar[0] << "ASDASD" << ar[1] << "SD" << ar[2] << "ASD\n";
-		//cout << "ASDASD" << "ASDASD" << "ASDASD " << "ASD" << "QWE" << "ASD" << "QWWE" << "ASDSD"  << "SOD\n";
 		float m1,m2,m3,min,max;
 		trig.getTriangleNormals(i,n1,n2,n3);
 		trig.getMorseValue(i, m1, m2, m3);
@@ -680,12 +653,12 @@ void myDisplay()
 			glLineWidth(10);
 			glColor3f(1.0, 1.0, 1.0);
 			glBegin(GL_LINES);
-			glVertex3f(v[0],v[1],v[2]+0.4);
-			//glVertex3f(bones[i][0],bones[i][1],bones[i][2]+0.4);
-			glVertex3f(joinBone[0],joinBone[1],joinBone[2]+0.4);
+			//glVertex3f(v[0],v[1],v[2]+0.4);
+			//glVertex3f(joinBone[0],joinBone[1],joinBone[2]+0.4);
 			glEnd();
 		}
 	}
+
 
 	glutSwapBuffers();
 }

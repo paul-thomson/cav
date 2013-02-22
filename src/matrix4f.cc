@@ -297,12 +297,18 @@ Vector3f operator % ( const Vector3f & ob1, const Vector3f & ob2)
 Vector3f operator + (const Vector3f& v1, const Vector3f& v2)
 {
     Vector3f v(v1);
-    //for (int i = 0; i < 3; i++) {
-    //	v[i] += v2[i];
-    //}
-    v[0] = v1[0] + v2[0];
-    v[1] = v1[1] + v2[1];
-    v[2] = v1[2] + v2[2];
+    for (int i = 0; i < 3; i++) {
+    	v[i] += v2[i];
+    }
+    return v;
+}
+
+Vector3f operator * (const Vector3f& v1, const float f)
+{
+    Vector3f v(v1);
+    for (int i = 0; i < 3; i++) {
+    	v[i] *= f;
+    }
     return v;
 }
 
