@@ -538,7 +538,7 @@ void loadBones(char * filename) {
 	b4.insert(b4.begin()+3,2);
 	bones.insert(bones.begin() + 3,b4);*/
 
-	boneRotations[16] = rotZ(1);
+	boneRotations[2] = rotX(1);
 	bonesfile.close();
 }
 
@@ -598,10 +598,6 @@ void myDisplay()
 			Vector3f currentBoneVector = Vector3f(bones[currentBoneIndex][0],bones[currentBoneIndex][1],bones[currentBoneIndex][2]);
 			Vector3f currentJoinBone = Vector3f(bones[joinBoneIndex][0],bones[joinBoneIndex][1],bones[joinBoneIndex][2]);
 			Matrix4f t = translation(currentBoneVector-currentJoinBone);
-			if (i == 3) {
-				printMatrix4f(t);
-				cout << "\n";
-			}
 			m = (boneRotations[currentBoneIndex] * t) * m;
 			mhatinv = !t * mhatinv;
 			currentBoneIndex = joinBoneIndex;
@@ -626,13 +622,13 @@ void myDisplay()
 		Vector3f v3 = Vector3f(0,0,0);
 		for (int b = 0; b < bones.size(); b++) {
 
-			w = vertexWeights[v1Num][b];
+			w = vertexWeights[v1Num][b-1];
 			v1 = v1 + (frameM[b] * (frameMhatinv[b] * cv1)) * w;
 
-			w = vertexWeights[v2Num][b];
+			w = vertexWeights[v2Num][b-1];
 			v2 = v2 + (frameM[b] * (frameMhatinv[b] * cv2)) * w;
 
-			w = vertexWeights[v3Num][b];
+			w = vertexWeights[v3Num][b-1];
 			v3 = v3 + (frameM[b] * (frameMhatinv[b] * cv3)) * w;
 
 		}
