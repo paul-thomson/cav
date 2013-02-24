@@ -538,7 +538,6 @@ void loadBones(char * filename) {
 	b4.insert(b4.begin()+3,2);
 	bones.insert(bones.begin() + 3,b4);*/
 
-	boneRotations[2] = rotX(1);
 	bonesfile.close();
 }
 
@@ -693,6 +692,13 @@ void myDisplay()
 	glutSwapBuffers();
 }
 
+void myIdle() {
+
+	boneRotations[2] = boneRotations[2] * rotX(0.05);
+	glutPostRedisplay();
+
+}
+
 
 int main(int argc, char **argv)
 {
@@ -757,7 +763,7 @@ int main(int argc, char **argv)
 
 
 	glutDisplayFunc(myDisplay);// Callback function
-
+	glutIdleFunc(myIdle); // called after myDisplay to check what has changed
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutTabletMotionFunc(tablet);
