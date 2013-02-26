@@ -538,6 +538,9 @@ void loadBones(char * filename) {
 	b4.insert(b4.begin()+3,2);
 	bones.insert(bones.begin() + 3,b4);*/
 
+	boneRotations[17] = rotX(1);
+	//boneRotations[18] = rotX(1);
+	//boneRotations[3] = rotZ(0.5);
 	bonesfile.close();
 }
 
@@ -575,13 +578,21 @@ void recalcModelView(void)
 	newModel = 0;
 }
 
+
+
+
 void myDisplay()
 {
 	bool DISPLAY_MESH = true;
-	bool DISPLAY_BONES = false;
+	bool DISPLAY_BONES = true;
 
 	if (newModel)
 		recalcModelView();
+
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHTING);
 
 	Matrix4f bone0 = translation(Vector3f(bones[0][0],bones[0][1],bones[0][2]));
 	vector <Matrix4f> frameM (bones.size());
@@ -637,27 +648,31 @@ void myDisplay()
 
 		m1 = m2 = m3 = trig.color(i);
 
-		GLfloat skinColor[] = {0.1, 1., 0.1, 1.0};
+		GLfloat skinColor[] = {1, 1., 1, 1.0};
 
 		if (max >= 0 && DISPLAY_MESH) {
 			glBegin(GL_TRIANGLES);
 
-			skinColor[1] = m1; skinColor[0] = 1-m1;
+			if (vertexWeights[v1Num][16] > 0 || vertexWeights[v2Num][16] > 0 || vertexWeights[v3Num][16] > 0) {
+				skinColor[0] = 0.1;
+				skinColor[2] = 0.1;
+			}
+			//skinColor[1] = m1; skinColor[0] = 1-m1;
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
 			glNormal3f(-n1[0],-n1[1],-n1[2]);
 			glVertex3f(v1[0],v1[1],v1[2]);
 
-			skinColor[1] = m2; skinColor[0] = 1-m2;
+			//skinColor[1] = m2; skinColor[0] = 1-m2;
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
 			glNormal3f(-n2[0],-n2[1],-n2[2]);
 			glVertex3f(v2[0],v2[1],v2[2]);
 
-			skinColor[1] = m3; skinColor[0] = 1-m3;
+			//skinColor[1] = m3; skinColor[0] = 1-m3;
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
 			glNormal3f(-n3[0],-n3[1],-n3[2]);
 			glVertex3f(v3[0],v3[1],v3[2]);
 
-			skinColor[1] = m1; skinColor[0] = 1-m1;
+			//skinColor[1] = m1; skinColor[0] = 1-m1;
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
 			glNormal3f(-n1[0],-n1[1],-n1[2]);
 			glVertex3f(v1[0],v1[1],v1[2]);
@@ -666,6 +681,11 @@ void myDisplay()
 		}
 
 	}
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHT0);
+	glDisable(GL_LIGHTING);
+
 	for (int i = 0; i < bones.size(); i++) {
 		int joinBoneIndex = bones[i][3];
 		if (joinBoneIndex >= 0 && DISPLAY_BONES) {
@@ -674,57 +694,38 @@ void myDisplay()
 			Vector3f boneVector = Vector3f(bones[i][0],bones[i][1],bones[i][2]);
 			Vector3f v1 = frameM[i] * (frameMhatinv[i]* boneVector);
 			Vector3f v2 = frameM[joinBoneIndex] * (frameMhatinv[joinBoneIndex] * joinBone);
-			if (i == 3) {
-				printMatrix4f(frameM[i]);
-				cout << "\n";
-			}
 
-			glLineWidth(10);
-			glColor3f(1.0, 1.0, 1.0);
+			glLineWidth(5);
+			glColor3f(0.5, 0, 0);
 			glBegin(GL_LINES);
 			glVertex3f(v1[0],v1[1],v1[2]);
 			glVertex3f(v2[0],v2[1],v2[2]);
 			glEnd();
+
+			//glBegin(GL_TRIANGLE);
+			//glVertex3f()
+			//glEnd();
+
 		}
 	}
-
 
 	glutSwapBuffers();
 }
 
 void myIdle() {
 
-	boneRotations[2] = boneRotations[2] * rotX(0.05);
-	glutPostRedisplay();
+	//boneRotations[16] = boneRotations[16] * rotX(0.05);// * rotY(0.05) * rotZ(0.05);
+	//glutPostRedisplay();
 
 }
 
-
 int main(int argc, char **argv)
 {
-	/* Matrix4f id = Matrix4f();
-	id.setIdentity();
-	Vector3f boneVector2 = Vector3f(-1,0,1);
-	Vector3f boneVector = Vector3f(0,0,1);
-	Vector3f joinBone = Vector3f(1,1,1);
-	Matrix4f t1 = translation(boneVector-joinBone);
-	Matrix4f m1 = rotZ(1.5) * t1;
-	Matrix4f mhatinv1 =  !rotZ(1.5) * !t1;
-	Matrix4f t2 = translation(boneVector2-boneVector);
-	Matrix4f m2 = id * t2;
-	Matrix4f mhatinv2 =  !id * !t2;
-	Matrix4f m = m1 * m2;
-	Matrix4f mhatinv = mhatinv1 * mhatinv2;
-
-	Vector3f v = m * mhatinv * boneVector2;
-	printVector3f(v);
-
-	return 0; */
 
 	if (argc >  1)  {
 		trig.loadFile(argv[1]);
 		loadBones("skeleton2.out");
-		loadWeights("attachment2.out");
+		loadWeights("attachmenttest.out");
 	}
 	else {
 		cerr << argv[0] << " <filename> " << endl;
@@ -751,14 +752,14 @@ int main(int argc, char **argv)
 
 	/* Setup the view of the cube. */
 	glMatrixMode(GL_PROJECTION);
-	gluPerspective( /* field of view in degree */ 40.0, 
-			/* aspect ratio */ 1., /* Z near */ 1.0, /* Z far */ 1000.0);
+	gluPerspective( /* field of view in degree */ 40.0,
+	/* aspect ratio */ 1., /* Z near */ 1.0, /* Z far */ 1000.0);
 
 	glMatrixMode(GL_MODELVIEW);
 
 	gluLookAt(0.0, 0.0, 7.0,  /* eye is at (0,0,5) */
-			0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-			0.0, 1.0, 0.0);      /* up is in positive Y direction */
+		  0.0, 0.0, 0.0,      /* center is at (0,0,0) */
+		  0.0, 1.0, 0.0);      /* up is in positive Y direction */
 	glPushMatrix();       /* dummy push so we can pop on model recalc */
 
 
