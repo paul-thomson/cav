@@ -10,7 +10,7 @@
 
 GLdouble bodyWidth = 1.0;
 
-GLfloat angle = -150;   /* in degrees */
+GLfloat angle = 0;   /* in degrees */
 GLfloat xloc = 0, yloc = 0, zloc = 0;
 int moving, begin;
 int newModel = 1;
@@ -150,9 +150,13 @@ static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
 
 
 TriangleMesh trig;
+
 vector< vector <float> > bones;
 vector< Matrix4f > boneRotations;
 vector< vector <float> > vertexWeights;
+vector< vector <Vector3f> > q;
+
+
 GLUquadricObj *qobj;
 
 
@@ -538,9 +542,6 @@ void loadBones(char * filename) {
 	b4.insert(b4.begin()+3,2);
 	bones.insert(bones.begin() + 3,b4);*/
 
-	boneRotations[17] = rotX(1);
-	//boneRotations[18] = rotX(1);
-	//boneRotations[3] = rotZ(0.5);
 	bonesfile.close();
 }
 
@@ -584,7 +585,7 @@ void recalcModelView(void)
 void myDisplay()
 {
 	bool DISPLAY_MESH = true;
-	bool DISPLAY_BONES = true;
+	bool DISPLAY_BONES = false;
 
 	if (newModel)
 		recalcModelView();
@@ -653,10 +654,10 @@ void myDisplay()
 		if (max >= 0 && DISPLAY_MESH) {
 			glBegin(GL_TRIANGLES);
 
-			if (vertexWeights[v1Num][16] > 0 || vertexWeights[v2Num][16] > 0 || vertexWeights[v3Num][16] > 0) {
-				skinColor[0] = 0.1;
-				skinColor[2] = 0.1;
-			}
+			//if (vertexWeights[v1Num][16] > 0 || vertexWeights[v2Num][16] > 0 || vertexWeights[v3Num][16] > 0) {
+			//	skinColor[0] = 0.1;
+			//	skinColor[2] = 0.1;
+			//}
 			//skinColor[1] = m1; skinColor[0] = 1-m1;
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor);
 			glNormal3f(-n1[0],-n1[1],-n1[2]);
@@ -712,10 +713,44 @@ void myDisplay()
 	glutSwapBuffers();
 }
 
-void myIdle() {
+float currentKeyframeTime = 0;
+float currentKeyframe = 0;
 
-	//boneRotations[16] = boneRotations[16] * rotX(0.05);// * rotY(0.05) * rotZ(0.05);
-	//glutPostRedisplay();
+void myIdle() {
+	if (currentKeyframe >= q[0].size()-1) {
+		return;
+	}
+
+	float t = currentKeyframeTime;
+	int f = currentKeyframe;
+	for (int i = 0; i < q.size(); i++) {
+		Vector3f rotations = q[i][f]*(1-t) + q[i][f+1]*t;
+		boneRotations[i] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+	}
+	if (t > 1) {
+		currentKeyframeTime = 0;
+		currentKeyframe += 1;
+	}
+	currentKeyframeTime += 0.1;
+
+	glutPostRedisplay();
+
+}
+
+void createKeyframes() {
+	int numberOfKeyframes = 4;
+	// initialising
+	for (int i = 0; i < bones.size(); i++) {
+		vector <Vector3f> qb;
+		for (int n = 0; n < numberOfKeyframes; n++) { // +1 so we start at 0,0,0
+			qb.push_back(Vector3f(0,0,0));
+		}
+		q.push_back(qb);
+	}
+	q[16][1] = Vector3f(-0.3,0,-0.7);
+	q[16][2] = Vector3f(0,0,0);
+	q[16][3] = Vector3f(-0.3,0,-0.7);
+	q[7][1] = Vector3f(0.5,0,0);
 
 }
 
@@ -725,7 +760,8 @@ int main(int argc, char **argv)
 	if (argc >  1)  {
 		trig.loadFile(argv[1]);
 		loadBones("skeleton2.out");
-		loadWeights("attachmenttest.out");
+		loadWeights("attachment2.out");
+		createKeyframes();
 	}
 	else {
 		cerr << argv[0] << " <filename> " << endl;
