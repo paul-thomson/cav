@@ -634,13 +634,13 @@ void myDisplay()
 		for (int b = 0; b < bones.size(); b++) {
 
 			w = vertexWeights[v1Num][b-1];
-			v1 = v1 + (frameM[b] * (frameMhatinv[b] * cv1)) * w;
+			v1 = v1 + ((frameM[b] * frameMhatinv[b]) * cv1) * w;
 
 			w = vertexWeights[v2Num][b-1];
-			v2 = v2 + (frameM[b] * (frameMhatinv[b] * cv2)) * w;
+			v2 = v2 + ((frameM[b] * frameMhatinv[b]) * cv2) * w;
 
 			w = vertexWeights[v3Num][b-1];
-			v3 = v3 + (frameM[b] * (frameMhatinv[b] * cv3)) * w;
+			v3 = v3 + ((frameM[b] * frameMhatinv[b]) * cv3) * w;
 
 		}
 		float m1,m2,m3,min,max;
@@ -716,16 +716,16 @@ void myDisplay()
 float currentKeyframeTime = 0;
 float currentKeyframe = 0;
 
-void myIdle() {
+void myIdleInterpolate() {
 	if (currentKeyframe >= q[0].size()-1) {
 		return;
 	}
 
 	float t = currentKeyframeTime;
 	int f = currentKeyframe;
-	for (int i = 0; i < q.size(); i++) {
-		Vector3f rotations = q[i][f]*(1-t) + q[i][f+1]*t;
-		boneRotations[i] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+	for (int b = 0; b < q.size(); b++) {
+		Vector3f rotations = q[b][f]*(1-t) + q[b][f+1]*t;
+		boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
 	}
 	if (t > 1) {
 		currentKeyframeTime = 0;
@@ -734,7 +734,67 @@ void myIdle() {
 	currentKeyframeTime += 0.1;
 
 	glutPostRedisplay();
+}
 
+void myIdleQuadraticBezier() {
+	if (currentKeyframe >= q[0].size()-1) {
+		return;
+	}
+
+	float t = currentKeyframeTime;
+	int f = currentKeyframe;
+
+	for (int b = 0; b < q.size(); b++) {
+
+		Vector3f p0 = q[b][f];
+		Vector3f p2 = q[b][f+1];
+		Vector3f p1 = p0 + (p2-p0)*0.9;
+
+		//Vector3f rotations = q[b][f]*(1-t) + q[b][f+1]*t;
+		//Vector3f rotations = (1-t)*((1-t)*p0 + t*p1) + t*((1-t)*p1 + t*p2);
+
+		Vector3f rotations = p0*(1-t)*(1-t) + p1*2*(1-t)*t + p2*t*t;
+
+		boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+	}
+	if (t > 1) {
+		currentKeyframeTime = 0;
+		currentKeyframe += 1;
+	}
+	currentKeyframeTime += 0.1;
+
+	glutPostRedisplay();
+}
+
+void myIdleCubicBezier() {
+	if (currentKeyframe >= q[0].size()-1) {
+		return;
+	}
+
+	float t = currentKeyframeTime;
+	int f = currentKeyframe;
+
+	for (int b = 0; b < q.size(); b++) {
+
+		Vector3f p0 = q[b][f];
+		Vector3f p3 = q[b][f+1];
+		Vector3f p1 = p0 + (p3-p0)*0.3;
+		Vector3f p2 = p0 + (p3-p0)*0.7;
+
+		//Vector3f rotations = q[b][f]*(1-t) + q[b][f+1]*t;
+		//Vector3f rotations = (1-t)*((1-t)*p0 + t*p1) + t*((1-t)*p1 + t*p2);
+
+		Vector3f rotations = p0*(1-t)*(1-t)*(1-t) + p1*3*(1-t)*(1-t)*t + p2*(1-t)*t*t + p3*t*t*t;
+
+		boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+	}
+	if (t > 1) {
+		currentKeyframeTime = 0;
+		currentKeyframe += 1;
+	}
+	currentKeyframeTime += 0.1;
+
+	glutPostRedisplay();
 }
 
 void createKeyframes() {
@@ -751,6 +811,10 @@ void createKeyframes() {
 	q[16][2] = Vector3f(0,0,0);
 	q[16][3] = Vector3f(-0.3,0,-0.7);
 	q[7][1] = Vector3f(0.5,0,0);
+
+	//for bezier
+	//q[16].insert(q[16].begin(),Vector3f(0,0,0));
+	//q[7].insert(q[7].begin(),Vector3f(0,0,0));
 
 }
 
@@ -789,18 +853,18 @@ int main(int argc, char **argv)
 	/* Setup the view of the cube. */
 	glMatrixMode(GL_PROJECTION);
 	gluPerspective( /* field of view in degree */ 40.0,
-	/* aspect ratio */ 1., /* Z near */ 1.0, /* Z far */ 1000.0);
+			/* aspect ratio */ 1., /* Z near */ 1.0, /* Z far */ 1000.0);
 
 	glMatrixMode(GL_MODELVIEW);
 
 	gluLookAt(0.0, 0.0, 7.0,  /* eye is at (0,0,5) */
-		  0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-		  0.0, 1.0, 0.0);      /* up is in positive Y direction */
+			0.0, 0.0, 0.0,      /* center is at (0,0,0) */
+			0.0, 1.0, 0.0);      /* up is in positive Y direction */
 	glPushMatrix();       /* dummy push so we can pop on model recalc */
 
 
 	glutDisplayFunc(myDisplay);// Callback function
-	glutIdleFunc(myIdle); // called after myDisplay to check what has changed
+	glutIdleFunc(myIdleCubicBezier); // called after myDisplay to check what has changed
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutTabletMotionFunc(tablet);
