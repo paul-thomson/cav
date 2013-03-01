@@ -1,23 +1,17 @@
 CAV Assignment - MANMADILLO
 ===
 
-#Workplan
-1. (DONE) Read skeleton.out and draw bones (to check if correct)
-2. (DONE pretty much) Use matrix transformations to rotate bones (using keyframe)
-3. Read attachment.out which contains weights for each mesh vertex:
+#What has been done:
+1) Read weights and skeleton files, storing the information in vectors.
+2) Calculate transformation matrices using the bone translations and rotations.
+3) Apply these transformations before drawing the mesh.
+4) Allow keyframe animations to be hardcoded (see function createKeyframes). These keyframes also allow translating the entire mesh, not just rotating. These animations are stored in the global q vector, with the last space of each keyframe being reserved for the translating.
+5) Linear interpolation is provided by the idle function myIdleLinearInterpolate
 
-Each line represents a vertex (by index). Each line contains the weights for all the bones (arranged by index).
-
-4. Use the weights to "attach" them to the bones. Then also apply transformations to the mesh vertices
-5. Done?
-
-#Compile and run
-./run.sh
-
-
-
-
-
+##Extra stuff
+6) Bone calculation and drawing is provided as it was used primarily for debugging. This can be switched on/off using the boolean statement at the beginning of the myDisplay function.
+7) Quadratic bezier and cubic bezier keyframe interpolation is also provided. These currently automatically generate the extra control points from the keyframes provided in the code. It generates these such that movements will be smoothed in some way (i.e. speed will not be constant between keyframes). It would be possible for the user to specify the control points themselves but I did not provide any examples of this.
+To use different keyframe interpolation change which function is set as the idle function (near the end of main method).
 
 ===================================================
 compiling the demo program:

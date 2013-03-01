@@ -5,9 +5,6 @@
 #include <set>
 #include "view.h"
 
-
-
-
 GLdouble bodyWidth = 1.0;
 
 GLfloat angle = 0;   /* in degrees */
@@ -504,42 +501,6 @@ void loadBones(char * filename) {
 		boneRotations.push_back(id);
 	}
 
-	/*Matrix4f id = Matrix4f();
-	id.setIdentity();
-	boneRotations.push_back(id);
-	boneRotations.push_back(rotZ(1.5));
-	//boneRotations.push_back(id);
-	boneRotations.push_back(id);
-	boneRotations.push_back(id);
-
-	vector<float> b1(4);
-	b1.insert(b1.begin(),1);
-	b1.insert(b1.begin()+1,1);
-	b1.insert(b1.begin()+2,0);
-	b1.insert(b1.begin()+3,-1);
-	bones.insert(bones.begin(),b1);
-
-	vector<float> b2(4);
-	b2.insert(b2.begin(),1);
-	b2.insert(b2.begin()+1,-1);
-	b2.insert(b2.begin()+2,0);
-	b2.insert(b2.begin()+3,0);
-	bones.insert(bones.begin() + 1,b2);
-
-	vector<float> b3(4);
-	b3.insert(b3.begin(),3);
-	b3.insert(b3.begin()+1,-3);
-	b3.insert(b3.begin()+2,0);
-	b3.insert(b3.begin()+3,1);
-	bones.insert(bones.begin() + 2,b3);
-
-	vector<float> b4(4);
-	b4.insert(b4.begin(),4);
-	b4.insert(b4.begin()+1,0);
-	b4.insert(b4.begin()+2,0);
-	b4.insert(b4.begin()+3,2);
-	bones.insert(bones.begin() + 3,b4);*/
-
 	bonesfile.close();
 }
 
@@ -884,7 +845,7 @@ int main(int argc, char **argv)
 
 
 	glutDisplayFunc(myDisplay);// Callback function
-	glutIdleFunc(myIdleInterpolate); // called after myDisplay to check what has changed
+	glutIdleFunc(myIdleCubicBezier); // called after myDisplay to check what has changed
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutTabletMotionFunc(tablet);
