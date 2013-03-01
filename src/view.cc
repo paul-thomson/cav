@@ -147,18 +147,16 @@ static float matDiff2[4] = {0.8, 0., 0., 1.0};
 static float matSpec2[4] = {0.4, 0., 0., 1.0};
 static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
 
-
-
 TriangleMesh trig;
 
 vector< vector <float> > bones;
 vector< Matrix4f > boneRotations;
 vector< vector <float> > vertexWeights;
 vector< vector <Vector3f> > q;
+vector <Matrix4f> frameMhatinv;
 
 
 GLUquadricObj *qobj;
-
 
 
 /*
@@ -579,9 +577,6 @@ void recalcModelView(void)
 	newModel = 0;
 }
 
-
-
-
 void myDisplay()
 {
 	bool DISPLAY_MESH = true;
@@ -590,14 +585,12 @@ void myDisplay()
 	if (newModel)
 		recalcModelView();
 
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHTING);
 
 	Matrix4f bone0 = translation(Vector3f(bones[0][0],bones[0][1],bones[0][2]));
 	vector <Matrix4f> frameM (bones.size());
-	vector <Matrix4f> frameMhatinv (bones.size());
 	for (int i = 0; i < bones.size(); i++) {
 		int currentBoneIndex = i;
 		int joinBoneIndex = bones[i][3];
@@ -614,10 +607,9 @@ void myDisplay()
 			currentBoneIndex = joinBoneIndex;
 			joinBoneIndex = bones[joinBoneIndex][3];
 		}
-		m = bone0 * m;
+		//m = bone0 * m;
 		mhatinv = !bone0 * mhatinv;
-		frameM.insert(frameM.begin() + i,m);
-		frameMhatinv.insert(frameMhatinv.begin() + i,mhatinv);
+		frameM.insert(frameM.begin() + i,m*mhatinv);
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear OpenGL Window
 	int trignum = trig.trigNum();
@@ -634,13 +626,13 @@ void myDisplay()
 		for (int b = 0; b < bones.size(); b++) {
 
 			w = vertexWeights[v1Num][b-1];
-			v1 = v1 + ((frameM[b] * frameMhatinv[b]) * cv1) * w;
+			v1 = v1 + (frameM[b] * cv1) * w;
 
 			w = vertexWeights[v2Num][b-1];
-			v2 = v2 + ((frameM[b] * frameMhatinv[b]) * cv2) * w;
+			v2 = v2 + (frameM[b] * cv2) * w;
 
 			w = vertexWeights[v3Num][b-1];
-			v3 = v3 + ((frameM[b] * frameMhatinv[b]) * cv3) * w;
+			v3 = v3 + (frameM[b] * cv3) * w;
 
 		}
 		float m1,m2,m3,min,max;
@@ -693,8 +685,8 @@ void myDisplay()
 			joinBoneIndex = bones[i][3];
 			Vector3f joinBone = Vector3f(bones[joinBoneIndex][0],bones[joinBoneIndex][1],bones[joinBoneIndex][2]);
 			Vector3f boneVector = Vector3f(bones[i][0],bones[i][1],bones[i][2]);
-			Vector3f v1 = frameM[i] * (frameMhatinv[i]* boneVector);
-			Vector3f v2 = frameM[joinBoneIndex] * (frameMhatinv[joinBoneIndex] * joinBone);
+			Vector3f v1 = frameM[i]* boneVector;
+			Vector3f v2 = frameM[joinBoneIndex]* joinBone;
 
 			glLineWidth(5);
 			glColor3f(0.5, 0, 0);
@@ -725,7 +717,14 @@ void myIdleInterpolate() {
 	int f = currentKeyframe;
 	for (int b = 0; b < q.size(); b++) {
 		Vector3f rotations = q[b][f]*(1-t) + q[b][f+1]*t;
-		boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+		if (b == q.size()-1) {
+			// this qindex is reserved for bone0 position
+			bones[0][0] = rotations[0];
+			bones[0][1] = rotations[1];
+			bones[0][2] = rotations[2];
+		} else {
+			boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+		}
 	}
 	if (t > 1) {
 		currentKeyframeTime = 0;
@@ -750,12 +749,20 @@ void myIdleQuadraticBezier() {
 		Vector3f p2 = q[b][f+1];
 		Vector3f p1 = p0 + (p2-p0)*0.9;
 
-		//Vector3f rotations = q[b][f]*(1-t) + q[b][f+1]*t;
-		//Vector3f rotations = (1-t)*((1-t)*p0 + t*p1) + t*((1-t)*p1 + t*p2);
+		float change = sqrt((p2[0]-p0[0])*(p2[0]-p0[0]) + (p2[1]-p0[1])*(p2[1]-p0[1]) + (p2[2]-p0[2])*(p2[2]-p0[2]));
+		if (change < 0.001) {
+			continue;
+		}
 
 		Vector3f rotations = p0*(1-t)*(1-t) + p1*2*(1-t)*t + p2*t*t;
-
-		boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+		if (b == q.size()-1) {
+			// this qindex is reserved for bone0 position
+			bones[0][0] = rotations[0];
+			bones[0][1] = rotations[1];
+			bones[0][2] = rotations[2];
+		} else {
+			boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+		}
 	}
 	if (t > 1) {
 		currentKeyframeTime = 0;
@@ -776,17 +783,28 @@ void myIdleCubicBezier() {
 
 	for (int b = 0; b < q.size(); b++) {
 
+
 		Vector3f p0 = q[b][f];
 		Vector3f p3 = q[b][f+1];
 		Vector3f p1 = p0 + (p3-p0)*0.3;
 		Vector3f p2 = p0 + (p3-p0)*0.7;
+		float change = sqrt((p3[0]-p0[0])*(p3[0]-p0[0]) + (p3[1]-p0[1])*(p3[1]-p0[1]) + (p3[2]-p0[2])*(p3[2]-p0[2]));
+		if (change < 0.001) {
+			continue;
+		}
 
 		//Vector3f rotations = q[b][f]*(1-t) + q[b][f+1]*t;
 		//Vector3f rotations = (1-t)*((1-t)*p0 + t*p1) + t*((1-t)*p1 + t*p2);
 
 		Vector3f rotations = p0*(1-t)*(1-t)*(1-t) + p1*3*(1-t)*(1-t)*t + p2*(1-t)*t*t + p3*t*t*t;
-
-		boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+		if (b == q.size()-1) {
+			// this qindex is reserved for bone0 position
+			bones[0][0] = rotations[0];
+			bones[0][1] = rotations[1];
+			bones[0][2] = rotations[2];
+		} else {
+			boneRotations[b] = rotX(rotations[0]) * rotY(rotations[1]) * rotZ(rotations[2]);
+		}
 	}
 	if (t > 1) {
 		currentKeyframeTime = 0;
@@ -800,22 +818,24 @@ void myIdleCubicBezier() {
 void createKeyframes() {
 	int numberOfKeyframes = 4;
 	// initialising
-	for (int i = 0; i < bones.size(); i++) {
+	for (int i = 0; i < bones.size()+1; i++) { //+1 so we include bone 0 position
 		vector <Vector3f> qb;
 		for (int n = 0; n < numberOfKeyframes; n++) { // +1 so we start at 0,0,0
-			qb.push_back(Vector3f(0,0,0));
+			if (i == bones.size()) {
+				//want to set the position of bone0 to bone0 position, not to (0,0,0)
+				qb.push_back(Vector3f(bones[0][0],bones[0][1],bones[0][2]));
+			} else {
+				qb.push_back(Vector3f(0,0,0));
+			}
 		}
 		q.push_back(qb);
 	}
 	q[16][1] = Vector3f(-0.3,0,-0.7);
 	q[16][2] = Vector3f(0,0,0);
 	q[16][3] = Vector3f(-0.3,0,-0.7);
-	q[7][1] = Vector3f(0.5,0,0);
-
-	//for bezier
-	//q[16].insert(q[16].begin(),Vector3f(0,0,0));
-	//q[7].insert(q[7].begin(),Vector3f(0,0,0));
-
+	q[7][1] = Vector3f(0.8,0,0);
+	q[2][1] = Vector3f(0.3,0,0.7);
+	q[q.size()-1][1] = Vector3f(0,0.3,0);
 }
 
 int main(int argc, char **argv)
@@ -864,7 +884,7 @@ int main(int argc, char **argv)
 
 
 	glutDisplayFunc(myDisplay);// Callback function
-	glutIdleFunc(myIdleCubicBezier); // called after myDisplay to check what has changed
+	glutIdleFunc(myIdleInterpolate); // called after myDisplay to check what has changed
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutTabletMotionFunc(tablet);

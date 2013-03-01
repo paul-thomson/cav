@@ -4,4 +4,4 @@ LIBS = -lglut -lGLU -lGL
 all: view
 
 view: $(SRCS)
-	g++ -o ../view $(SRCS) $(LIBS)
+	g++ -g -O0 -o ../view $(SRCS) $(LIBS)
