@@ -3,6 +3,7 @@ CAV Assignment - MANMADILLO
 
 #What has been done:
 1) Read weights and skeleton files, storing the information in vectors.
+
 2) Calculate transformation matrices using the bone translations and rotations.
 3) Apply these transformations before drawing the mesh.
 4) Allow keyframe animations to be hardcoded (see function createKeyframes). These keyframes also allow translating the entire mesh, not just rotating. These animations are stored in the global q vector, with the last space of each keyframe being reserved for the translating.
