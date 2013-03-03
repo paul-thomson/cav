@@ -718,6 +718,7 @@ void myIdleQuadraticBezier() {
 		Vector3f rotations = p0*(1-t)*(1-t) + p1*2*(1-t)*t + p2*t*t;
 		if (b == q.size()-1) {
 			// this qindex is reserved for bone0 position
+			rotations = q[b][f]*(1-t) + q[b][f+1]*t;
 			bones[0][0] = rotations[0];
 			bones[0][1] = rotations[1];
 			bones[0][2] = rotations[2];
@@ -760,6 +761,7 @@ void myIdleCubicBezier() {
 		Vector3f rotations = p0*(1-t)*(1-t)*(1-t) + p1*3*(1-t)*(1-t)*t + p2*(1-t)*t*t + p3*t*t*t;
 		if (b == q.size()-1) {
 			// this qindex is reserved for bone0 position
+			rotations = q[b][f]*(1-t) + q[b][f+1]*t;
 			bones[0][0] = rotations[0];
 			bones[0][1] = rotations[1];
 			bones[0][2] = rotations[2];
@@ -777,7 +779,7 @@ void myIdleCubicBezier() {
 }
 
 void createKeyframes() {
-	int numberOfKeyframes = 4;
+	int numberOfKeyframes = 5;
 	// initialising
 	for (int i = 0; i < bones.size()+1; i++) { //+1 so we include bone 0 position
 		vector <Vector3f> qb;
@@ -791,12 +793,26 @@ void createKeyframes() {
 		}
 		q.push_back(qb);
 	}
-	q[16][1] = Vector3f(-0.3,0,-0.7);
-	q[16][2] = Vector3f(0,0,0);
-	q[16][3] = Vector3f(-0.3,0,-0.7);
-	q[7][1] = Vector3f(0.8,0,0);
-	q[2][1] = Vector3f(0.3,0,0.7);
-	q[q.size()-1][1] = Vector3f(0,0.3,0);
+
+
+	q[2][1] = Vector3f(-0.7,0.4,-0.25);	//right hip
+	q[3][1] = Vector3f(1.3,0,0.7);		//right knee
+	q[4][1] = Vector3f(-0.4,0,-0.3);	//right ankle
+
+	q[19][1] = Vector3f(-0.5,-0.25,0.25);		// left hip
+	q[20][1] = Vector3f(1,0,-0.6);		//left knee
+	q[21][1] = Vector3f(-0.5,0,0.35);	//left ankle
+
+	q[2][2] = Vector3f(-0,0,-0.4);	//right hip
+	q[3][2] = Vector3f(1.0,0,0.6);		//right knee
+	q[4][2] = Vector3f(-0.5,0,-0.35);	//right ankle
+
+	q[19][2] = Vector3f(0,0,0.4);		// left hip
+	q[20][2] = Vector3f(1,0,-0.6);	//left knee
+	q[21][2] = Vector3f(0.5,0,0.35);	//left ankle
+
+	q[q.size()-1][1] = Vector3f(bones[0][0],bones[0][1]+0.5,bones[0][2]); // body translation
+	q[q.size()-1][2] = Vector3f(bones[0][0],bones[0][1]-0.5,bones[0][2]); // body translation
 }
 
 int main(int argc, char **argv)

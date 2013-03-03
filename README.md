@@ -12,11 +12,13 @@ CAV Assignment - MANMADILLO
 
 5) Linear interpolation is provided by the idle function myIdleLinearInterpolate
 
+6) Short jumping animation has been added - not much time has been spent trying get the correct rotations so it looks a bit warped in some places.
+
 ##Extra stuff
 
-6) Bone calculation and drawing is provided as it was used primarily for debugging. This can be switched on/off using the boolean statement at the beginning of the myDisplay function.
+7) Bone calculation and drawing is provided as it was used primarily for debugging. This can be switched on/off using the boolean statement at the beginning of the myDisplay function.
 
-7) Quadratic bezier and cubic bezier keyframe interpolation is also provided. These currently automatically generate the extra control points from the keyframes provided in the code. It generates these such that movements will be smoothed in some way (i.e. speed will not be constant between keyframes). It would be possible for the user to specify the control points themselves but I did not provide any examples of this.
+8) Quadratic bezier and cubic bezier keyframe interpolation is also provided. These currently automatically generate the extra control points from the keyframes provided in the code. It generates these such that movements will be smoothed in some way (i.e. speed will not be constant between keyframes). It would be possible for the user to specify the control points themselves but I did not provide any examples of this. Only linear interpolation can be used for translation, or the body will move in expected ways.
 To use different keyframe interpolation change which function is set as the idle function (near the end of main method).
 
 #How to run
